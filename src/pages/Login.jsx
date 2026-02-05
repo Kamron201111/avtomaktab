@@ -74,7 +74,7 @@ function Login() {
     try {
       const success = await loginAdmin(adminUsername, adminPassword);
       if (success) {
-        navigate("/admin-users");
+        navigate("/admin");
       } else {
         setError("Login yoki parol noto'g'ri!");
       }
