@@ -26,12 +26,22 @@ export function AuthProvider({ children }) {
 
   // Admin login funksiyasi
   async function loginAdmin(username, password) {
-    const { data, error } = await supabase
-      .from("admin")
-      .select("*")
-      .eq("username", username)
-      .eq("password", password)
-      .single();
+  const { data, error } = await supabase
+    .from("admin")
+    .select("*")
+    .eq("username", username)
+    .eq("password", password)
+    .single();
+
+  if (error || !data) {
+    return false;
+  }
+
+  setUser(data);
+  setIsAdmin(true);
+  return true;
+}
+
     
     if (error || !data) return { error: "Username yoki parol xato!" };
     
