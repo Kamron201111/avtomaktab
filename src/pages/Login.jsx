@@ -13,7 +13,6 @@ function Login() {
   const navigate = useNavigate();
 
   const [isAdminLogin, setIsAdminLogin] = useState(false);
-  const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,7 +36,7 @@ function Login() {
     }
   }
 
-  // USER LOGIN
+  // 🔥 USER LOGIN → bo‘lmasa AUTO REGISTER
   async function handleUserLogin(e) {
     e.preventDefault();
 
@@ -54,54 +53,30 @@ function Login() {
     setLoading(true);
     setError("");
 
-    try {
-      const success = await loginUser(
-        getFullPhoneNumber(userPhone),
-        userBirthYear
-      );
+    const phone = getFullPhoneNumber(userPhone);
 
-      if (success) {
+    try {
+      // 1️⃣ Avval LOGIN qilib ko‘ramiz
+      const loginSuccess = await loginUser(phone, userBirthYear);
+
+      if (loginSuccess) {
         navigate("/darsliklar");
-      } else {
-        setError("Telefon raqam yoki tug‘ilgan yil noto‘g‘ri!");
+        return;
       }
-    } catch {
-      setError("Kirishda xatolik yuz berdi!");
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  // USER REGISTER
-  async function handleRegister(e) {
-    e.preventDefault();
-
-    if (!userPhone || !userBirthYear) {
-      setError("Barcha maydonlarni to‘ldiring!");
-      return;
-    }
-
-    if (!validatePhoneNumber(userPhone)) {
-      setError("Telefon raqamini to‘g‘ri kiriting!");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const success = await registerUser(
-        getFullPhoneNumber(userPhone),
+      // 2️⃣ Agar login bo‘lmasa → REGISTER
+      const registerSuccess = await registerUser(
+        phone,
         `${userBirthYear}-01-01`
       );
 
-      if (success) {
+      if (registerSuccess) {
         navigate("/darsliklar");
       } else {
-        setError("Bu foydalanuvchi allaqachon mavjud!");
+        setError("Kirishda xatolik yuz berdi!");
       }
     } catch {
-      setError("Ro‘yxatdan o‘tishda xatolik!");
+      setError("Kirishda xatolik yuz berdi!");
     } finally {
       setLoading(false);
     }
@@ -137,11 +112,7 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center bg-secondary-50">
       <div className="max-w-md w-full card p-8">
         <h2 className="text-2xl font-bold text-center mb-6">
-          {isAdminLogin
-            ? "Admin kirish"
-            : isRegister
-            ? "Ro‘yxatdan o‘tish"
-            : "Foydalanuvchi kirish"}
+          {isAdminLogin ? "Admin kirish" : "Kirish / Ro‘yxatdan o‘tish"}
         </h2>
 
         {error && (
@@ -151,10 +122,7 @@ function Login() {
         )}
 
         {!isAdminLogin ? (
-          <form
-            onSubmit={isRegister ? handleRegister : handleUserLogin}
-            className="space-y-4"
-          >
+          <form onSubmit={handleUserLogin} className="space-y-4">
             <input
               type="tel"
               placeholder="+998(XX)XXX-XX-XX"
@@ -175,27 +143,10 @@ function Login() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || phoneError}
               className="btn-primary w-full"
             >
-              {loading
-                ? "Kuting..."
-                : isRegister
-                ? "Ro‘yxatdan o‘tish"
-                : "Kirish"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegister(!isRegister);
-                setError("");
-              }}
-              className="w-full text-sm text-primary-600"
-            >
-              {isRegister
-                ? "Kirishga qaytish"
-                : "Ro‘yxatdan o‘tish"}
+              {loading ? "Kuting..." : "Kirish"}
             </button>
 
             <button
@@ -206,7 +157,7 @@ function Login() {
               }}
               className="w-full text-sm text-gray-500"
             >
-              Admin kirish
+              Admin bilan bog‘lanish
             </button>
           </form>
         ) : (
