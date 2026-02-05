@@ -17,7 +17,27 @@ export function AuthProvider({ children }) {
       .filter("birth_date", "lt", `${Number(birthYear) + 1}-01-01`)
       .single();
 
-    if (error || !data) return false; // ❗ faqat shu joy o‘zgardi
+    if (error || !data) return false;
+
+    setUser(data);
+    setIsAdmin(false);
+    return true;
+  }
+
+  // 🆕 USER REGISTER (RO‘YXATDAN O‘TISH)
+  async function registerUser(phone, birthDate) {
+    const { data, error } = await supabase
+      .from("users")
+      .insert([
+        {
+          phone: phone,
+          birth_date: birthDate,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error || !data) return false;
 
     setUser(data);
     setIsAdmin(false);
@@ -33,7 +53,7 @@ export function AuthProvider({ children }) {
       .eq("password", password)
       .single();
 
-    if (error || !data) return false; // ❗ faqat shu joy o‘zgardi
+    if (error || !data) return false;
 
     setUser(data);
     setIsAdmin(true);
@@ -46,7 +66,16 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loginUser, loginAdmin, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAdmin,
+        loginUser,
+        registerUser, // 👈 QO‘SHILDI
+        loginAdmin,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
