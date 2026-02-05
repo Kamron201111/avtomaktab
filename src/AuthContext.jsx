@@ -24,8 +24,9 @@ export function AuthProvider({ children }) {
     return true;
   }
 
-  // 🆕 USER REGISTER (RO‘YXATDAN O‘TISH)
+  // 🆕 USER REGISTER (agar bor bo‘lsa — login qiladi)
   async function registerUser(phone, birthDate) {
+    // 1️⃣ Avval qo‘shib ko‘ramiz
     const { data, error } = await supabase
       .from("users")
       .insert([
@@ -37,11 +38,27 @@ export function AuthProvider({ children }) {
       .select()
       .single();
 
-    if (error || !data) return false;
+    // 2️⃣ Agar muvaffaqiyatli bo‘lsa
+    if (!error && data) {
+      setUser(data);
+      setIsAdmin(false);
+      return true;
+    }
 
-    setUser(data);
-    setIsAdmin(false);
-    return true;
+    // 3️⃣ Agar UNIQUE error bo‘lsa → user allaqachon bor
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("*")
+      .eq("phone", phone)
+      .single();
+
+    if (existingUser) {
+      setUser(existingUser);
+      setIsAdmin(false);
+      return true;
+    }
+
+    return false;
   }
 
   // Admin login
@@ -71,7 +88,7 @@ export function AuthProvider({ children }) {
         user,
         isAdmin,
         loginUser,
-        registerUser, // 👈 QO‘SHILDI
+        registerUser,
         loginAdmin,
         logout,
       }}
