@@ -7,7 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // User login funksiyasi (telefon + tug'ilgan yil)
+  // User login (telefon + tug‘ilgan yil)
   async function loginUser(phone, birthYear) {
     const { data, error } = await supabase
       .from("users")
@@ -16,38 +16,28 @@ export function AuthProvider({ children }) {
       .filter("birth_date", "gte", `${birthYear}-01-01`)
       .filter("birth_date", "lt", `${Number(birthYear) + 1}-01-01`)
       .single();
-    
-    if (error || !data) return { error: "Telefon raqam yoki tug'ilgan yil xato!" };
-    
+
+    if (error || !data) return false; // ❗ faqat shu joy o‘zgardi
+
     setUser(data);
     setIsAdmin(false);
-    return { data };
+    return true;
   }
 
-  // Admin login funksiyasi
+  // Admin login
   async function loginAdmin(username, password) {
-  const { data, error } = await supabase
-    .from("admin")
-    .select("*")
-    .eq("username", username)
-    .eq("password", password)
-    .single();
+    const { data, error } = await supabase
+      .from("admin")
+      .select("*")
+      .eq("username", username)
+      .eq("password", password)
+      .single();
 
-  if (error || !data) {
-    return false;
-  }
+    if (error || !data) return false; // ❗ faqat shu joy o‘zgardi
 
-  setUser(data);
-  setIsAdmin(true);
-  return true;
-}
-
-    
-    if (error || !data) return { error: "Username yoki parol xato!" };
-    
     setUser(data);
     setIsAdmin(true);
-    return { data };
+    return true;
   }
 
   function logout() {
@@ -64,4 +54,4 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   return useContext(AuthContext);
-} 
+}
