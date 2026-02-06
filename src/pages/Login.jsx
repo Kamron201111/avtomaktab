@@ -69,7 +69,7 @@ function Login() {
     }
 
     setLoading(true);
-    setError("");
+    setError("Login yoki parol xato ");
 
     try {
       const success = await loginAdmin(adminUsername, adminPassword);
